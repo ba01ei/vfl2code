@@ -7,19 +7,19 @@ class UIView
     attr_accessor :name, :x, :y, :r, :b, :w, :h, :xref, :yref, :rref, :bref, :added_to_list, :centerx, :centery
 
     def code_for_x
-        return "#{self.xref.to_s.length>0 ? "CGRectGetMaxX(#{self.xref}.frame) + " : ""}#{self.x}"
+        return "#{self.xref.to_s.length>0 ? "CGRectGetMaxX(#{self.xref}.frame)+" : ""}#{self.x}"
     end
 
     def code_for_right
-        return "#{self.rref.to_s.length>0 ? "CGRectGetMinX(#{self.rref}.frame)" : "superview.bounds.size.width"} - (#{self.r})"
+        return "#{self.rref.to_s.length>0 ? "CGRectGetMinX(#{self.rref}.frame)" : "superview.bounds.size.width"}-(#{self.r})"
     end
 
     def code_for_y
-        return "#{self.yref.to_s.length>0 ? "CGRectGetMaxY(#{self.yref}.frame) + " : ""}#{self.y}"
+        return "#{self.yref.to_s.length>0 ? "CGRectGetMaxY(#{self.yref}.frame)+" : ""}#{self.y}"
     end
 
     def code_for_bottom
-        return "#{self.bref.to_s.length>0 ? "CGRectGetMinY(#{self.bref}.frame)" : "superview.bounds.size.height"} - (#{self.b})"
+        return "#{self.bref.to_s.length>0 ? "CGRectGetMinY(#{self.bref}.frame)" : "superview.bounds.size.height"}-(#{self.b})"
     end    
 end
 
@@ -98,7 +98,7 @@ def parse(vfl)
             elsif element[/^([_a-zA-Z\d]+).*/]
                 # get number between elements
                 if exists(position)
-                    position = position + " + " + $1
+                    position = position + "+" + $1
                 end
             elsif element[/\[([a-zA-Z0-9_\.]+)\s*(?:\(([_a-zA-Z\d\>]+)[^\)]*\))?\]/]
                 # get element in brackets (possibly with number in paren)
@@ -117,7 +117,7 @@ def parse(vfl)
                     if $2 and (not $2.index(">"))
                         view.w = $2
                         if exists(position)
-                            position = position + " + " + view.w
+                            position = position + "+" + view.w
                         end
                         # puts "#{element} does have a width: #{$2}, position becomes #{position}."
                     elsif (not $2) and exists(position)
@@ -139,7 +139,7 @@ def parse(vfl)
                     if $2 and (not $2.index(">"))
                         view.h = $2
                         if exists(position)
-                            position = position + " + " + $2
+                            position = position + "+" + $2
                         end
                     elsif (not $2) and exists(position)
                         ref = view.name
@@ -209,89 +209,86 @@ def objc_gen
     code = "// --- VFL GENERATED CODE ---\n"
     code << "/*\n"
     code << PARAMS[:VFL].split("\n").collect{|l| " "+l.strip}.join("\n")
-    code << "\n */\n{\n"
-    code << "    // You need to predefine superview before this.\n\n    CGRect frame;\n\n"
+    code << "\n */\n{"
+    code << "CGRect f;"
     arh = "" # horizontal autoresizing mask
     arv = ""
     LIST.each { |view|
-        code << "    frame = #{view.name}.frame;\n" # in case user had predefined sizes, or autocalculated sizes
+        code << "f=#{view.name}.frame;" # in case user had predefined sizes, or autocalculated sizes
         if view.centerx
-            code << (exists(view.w) ? "    frame.size.width = #{view.w};\n" : "    // You need to set frame.size.width before this\n")
-            code << "    frame.origin.x = (superview.bounds.size.width - frame.size.width) / 2.0;\n"
-            arh = "UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin"
+            code << (exists(view.w) ? "f.size.width=#{view.w};" : "")
+            code << "f.origin.x=(superview.bounds.size.width-f.size.width)/2.;"
+            arh = "UIViewAutoresizingFlexibleLeftMargin|UIViewAutoresizingFlexibleRightMargin"
         elsif exists(view.x) and exists(view.w)
-            code << "    frame.origin.x = #{view.code_for_x};\n"
-            code << "    frame.size.width = #{view.w};\n"
+            code << "f.origin.x=#{view.code_for_x};"
+            code << "f.size.width=#{view.w};"
             arh = "UIViewAutoresizingFlexibleRightMargin"
         elsif exists(view.w) and exists(view.r)
-            code << "    frame.origin.x = #{view.code_for_right} - (#{view.w});\n"
-            code << "    frame.size.width = #{view.w};\n"
+            code << "f.origin.x=#{view.code_for_right}-(#{view.w});"
+            code << "f.size.width=#{view.w};"
             arh = "UIViewAutoresizingFlexibleLeftMargin"
         elsif exists(view.x) and exists(view.r)
-            code << "    frame.origin.x = #{view.code_for_x};\n"
-            code << "    frame.size.width = #{view.code_for_right} - frame.origin.x;\n"
+            code << "f.origin.x=#{view.code_for_x};"
+            code << "f.size.width=#{view.code_for_right}-f.origin.x;"
             arh = "UIViewAutoresizingFlexibleWidth"
         else
             arh = ""
             if exists(view.w)
-                code << "    frame.size.width = #{view.w};\n    // You need to set frame.origin.x\n"
+                code << "f.size.width=#{view.w};"
                 arh = "?"
             end
             if exists(view.x)
-                code << "    frame.origin.x = #{view.code_for_x};\n    // You need to set frame.size.width\n"
+                code << "f.origin.x=#{view.code_for_x};"
                 arh = "UIViewAutoresizingFlexibleRightMargin"
             end
             if exists(view.r)
-                code << "    // You need to set frame.size.width\n    frame.origin.x = #{view.code_for_right} - frame.size.width;\n"
+                code << "f.origin.x=#{view.code_for_right}-f.size.width;"
                 arh = "UIViewAutoresizingFlexibleLeftMargin"
             end
             if arh.length==0
-                code << "    // You need to set frame.size.width\n    // You need to set frame.origin.x\n"
                 arh = "?"
             end
         end
 
         if view.centery
-            code << (exists(view.h) ? "    frame.size.height = #{view.h};\n" : "    // You need to set frame.size.height before this\n")
-            code << "    frame.origin.y = (superview.bounds.size.height - frame.size.height) / 2.0;\n"
-            arv = "UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin"
+            code << (exists(view.h) ? "f.size.height=#{view.h};" : "")
+            code << "f.origin.y=(superview.bounds.size.height-f.size.height)/2.;"
+            arv = "UIViewAutoresizingFlexibleTopMargin|UIViewAutoresizingFlexibleBottomMargin"
         elsif exists(view.y) and exists(view.h)
-            code << "    frame.origin.y = #{view.code_for_y};\n"
-            code << "    frame.size.height = #{view.h};\n"
+            code << "f.origin.y=#{view.code_for_y};"
+            code << "f.size.height=#{view.h};"
             arv = "UIViewAutoresizingFlexibleBottomMargin"
         elsif exists(view.h) and exists(view.b)
-            code << "    frame.origin.y = #{view.code_for_bottom} - #{view.h};\n"
-            code << "    frame.size.height = #{view.h};\n"
+            code << "f.origin.y=#{view.code_for_bottom}-#{view.h};"
+            code << "f.size.height=#{view.h};"
             arv = "UIViewAutoresizingFlexibleTopMargin"
         elsif exists(view.y) and exists(view.b)
-            code << "    frame.origin.y = #{view.code_for_y};\n"
-            code << "    frame.size.height = #{view.code_for_bottom} - frame.origin.y;\n"
+            code << "f.origin.y=#{view.code_for_y};"
+            code << "f.size.height=#{view.code_for_bottom}-f.origin.y;"
             arv = "UIViewAutoresizingFlexibleHeight"
         else
             arv = ""
             if exists(view.h)
-                code << "    frame.size.height = #{view.h};\n    // You need to set frame.origin.y\n"
+                code << "f.size.height=#{view.h};"
                 arv = "?"
             end
             if exists(view.y)
-                code << "    frame.origin.y = #{view.code_for_y};\n    // You need to set frame.size.height\n"
+                code << "f.origin.y=#{view.code_for_y};"
                 arv = "UIViewAutoresizingFlexibleBottomMargin"
             end
             if exists(view.b)
-                code << "    // You need to set frame.size.height\n    frame.origin.y = #{view.code_for_bottom} - frame.size.height;\n"
+                code << "f.origin.y=#{view.code_for_bottom}-f.size.height;"
                 arv = "UIViewAutoresizingFlexibleTopMargin"
             end
             if arv.length==0
-                code << "    // You need to set frame.size.height\n    // You need to set frame.origin.y\n"
                 arv = "?"
             end
         end
 
-        code << "    #{view.name}.frame = frame;\n"
-        code << (arh=="?" ? "    // You need to figure out the horizontal autoresizing mask\n" : "    #{view.name}.autoresizingMask |= #{arh};\n")
-        code << (arv=="?" ? "    // You need to figure out the vertical autoresizing mask\n" : "    #{view.name}.autoresizingMask |= #{arv};\n")
-        code << "    [superview addSubview:#{view.name}];\n"
-        code << "\n"
+        code << "#{view.name}.frame=f;"
+        code << (arh=="?" ? "" : "#{view.name}.autoresizingMask|=#{arh};")
+        code << (arv=="?" ? "" : "#{view.name}.autoresizingMask|=#{arv};")
+        code << "[superview addSubview:#{view.name}];"
     }
     code << "}\n// --- END OF CODE GENERATED FROM VFL ---\n"
     code
