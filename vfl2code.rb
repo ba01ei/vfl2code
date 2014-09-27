@@ -20,7 +20,7 @@ class UIView
 
     def code_for_bottom
         return "#{self.bref.to_s.length>0 ? "CGRectGetMinY(#{self.bref}.frame)" : "superview.bounds.size.height"}-(#{self.b})"
-    end    
+    end
 end
 
 PARAMS = {:VFL => ""}
@@ -87,7 +87,7 @@ def parse(vfl)
         # puts orientation.to_s
         line.gsub!(/^(H|V):/, "")
         elements = line.split("-")
-        
+
         position = "" # positon=empty string means position is unknown. If it's unknown we don't allow any calculation on that
         ref = ""
 
@@ -159,7 +159,7 @@ def parse(vfl)
         # puts "reversed direction (r->l or bottom->top)"
         position = ""
         ref = ""
-        elements.reverse.each_with_index do |element, idx|            
+        elements.reverse.each_with_index do |element, idx|
             treat_element.call(element, true)
         end
     end
@@ -205,32 +205,36 @@ def construct_list
     # puts LIST.collect{|v| v.name}
 end
 
-def objc_gen
+def objc_gen(swift)
     code = "// --- VFL GENERATED CODE ---\n"
     code << "/*\n"
     code << PARAMS[:VFL].split("\n").collect{|l| " "+l.strip}.join("\n")
-    code << "\n */\n{"
-    code << "CGRect f;"
+    if swift
+      code << "*/\nvar f:CGRect;"
+    else
+      code << "\n */\n{"
+      code << "CGRect f;"
+    end
     arh = "" # horizontal autoresizing mask
     arv = ""
     LIST.each { |view|
         code << "f=#{view.name}.frame;" # in case user had predefined sizes, or autocalculated sizes
         if view.centerx
             code << (exists(view.w) ? "f.size.width=#{view.w};" : "")
-            code << "f.origin.x=(superview.bounds.size.width-f.size.width)/2.;"
-            arh = "UIViewAutoresizingFlexibleLeftMargin|UIViewAutoresizingFlexibleRightMargin"
+            code << "f.origin.x=(superview.bounds.size.width-f.size.width)/2.0;"
+            arh = "UIViewAutoresizing#{swift ? "." : ""}FlexibleLeftMargin|UIViewAutoresizing#{swift ? "." : ""}FlexibleRightMargin"
         elsif exists(view.x) and exists(view.w)
             code << "f.origin.x=#{view.code_for_x};"
             code << "f.size.width=#{view.w};"
-            arh = "UIViewAutoresizingFlexibleRightMargin"
+            arh = "UIViewAutoresizing#{swift ? "." : ""}FlexibleRightMargin"
         elsif exists(view.w) and exists(view.r)
             code << "f.origin.x=#{view.code_for_right}-(#{view.w});"
             code << "f.size.width=#{view.w};"
-            arh = "UIViewAutoresizingFlexibleLeftMargin"
+            arh = "UIViewAutoresizing#{swift ? "." : ""}FlexibleLeftMargin"
         elsif exists(view.x) and exists(view.r)
             code << "f.origin.x=#{view.code_for_x};"
             code << "f.size.width=#{view.code_for_right}-f.origin.x;"
-            arh = "UIViewAutoresizingFlexibleWidth"
+            arh = "UIViewAutoresizing#{swift ? "." : ""}FlexibleWidth"
         else
             arh = ""
             if exists(view.w)
@@ -239,11 +243,11 @@ def objc_gen
             end
             if exists(view.x)
                 code << "f.origin.x=#{view.code_for_x};"
-                arh = "UIViewAutoresizingFlexibleRightMargin"
+                arh = "UIViewAutoresizing#{swift ? "." : ""}FlexibleRightMargin"
             end
             if exists(view.r)
                 code << "f.origin.x=#{view.code_for_right}-f.size.width;"
-                arh = "UIViewAutoresizingFlexibleLeftMargin"
+                arh = "UIViewAutoresizing#{swift ? "." : ""}FlexibleLeftMargin"
             end
             if arh.length==0
                 arh = "?"
@@ -253,19 +257,19 @@ def objc_gen
         if view.centery
             code << (exists(view.h) ? "f.size.height=#{view.h};" : "")
             code << "f.origin.y=(superview.bounds.size.height-f.size.height)/2.;"
-            arv = "UIViewAutoresizingFlexibleTopMargin|UIViewAutoresizingFlexibleBottomMargin"
+            arv = "UIViewAutoresizing#{swift ? "." : ""}FlexibleTopMargin|UIViewAutoresizing#{swift ? "." : ""}FlexibleBottomMargin"
         elsif exists(view.y) and exists(view.h)
             code << "f.origin.y=#{view.code_for_y};"
             code << "f.size.height=#{view.h};"
-            arv = "UIViewAutoresizingFlexibleBottomMargin"
+            arv = "UIViewAutoresizing#{swift ? "." : ""}FlexibleBottomMargin"
         elsif exists(view.h) and exists(view.b)
             code << "f.origin.y=#{view.code_for_bottom}-#{view.h};"
             code << "f.size.height=#{view.h};"
-            arv = "UIViewAutoresizingFlexibleTopMargin"
+            arv = "UIViewAutoresizing#{swift ? "." : ""}FlexibleTopMargin"
         elsif exists(view.y) and exists(view.b)
             code << "f.origin.y=#{view.code_for_y};"
             code << "f.size.height=#{view.code_for_bottom}-f.origin.y;"
-            arv = "UIViewAutoresizingFlexibleHeight"
+            arv = "UIViewAutoresizing#{swift ? "." : ""}FlexibleHeight"
         else
             arv = ""
             if exists(view.h)
@@ -274,11 +278,11 @@ def objc_gen
             end
             if exists(view.y)
                 code << "f.origin.y=#{view.code_for_y};"
-                arv = "UIViewAutoresizingFlexibleBottomMargin"
+                arv = "UIViewAutoresizing#{swift ? "." : ""}FlexibleBottomMargin"
             end
             if exists(view.b)
                 code << "f.origin.y=#{view.code_for_bottom}-f.size.height;"
-                arv = "UIViewAutoresizingFlexibleTopMargin"
+                arv = "UIViewAutoresizing#{swift ? "." : ""}FlexibleTopMargin"
             end
             if arv.length==0
                 arv = "?"
@@ -288,24 +292,31 @@ def objc_gen
         code << "#{view.name}.frame=f;"
         code << (arh=="?" ? "" : "#{view.name}.autoresizingMask|=#{arh};")
         code << (arv=="?" ? "" : "#{view.name}.autoresizingMask|=#{arv};")
-        code << "[superview addSubview:#{view.name}];"
+        if swift
+          code << "superview.addSubview(#{view.name});"
+        else
+          code << "[superview addSubview:#{view.name}];"
+        end
     }
-    code << "}\n// --- END OF CODE GENERATED FROM VFL ---\n"
+    unless swift
+      code << "}"
+    end
+    code << "\n// --- END OF CODE GENERATED FROM VFL ---\n"
     code
 end
 
 
-def transform_raw_code(vfl)
+def transform_raw_code(vfl, swift)
     PARAMS[:VFL] = ""
     HASH.clear
     LIST.clear
 
     parse(vfl)
     construct_list
-    objc_gen
+    objc_gen(swift)
 end
 
-def transform_delimited_code(input)
+def transform_delimited_code(input, swift)
     code = input
     vfl_start = "/*\n"
     vfl_finish = "*/"
@@ -320,13 +331,13 @@ def transform_delimited_code(input)
             i_finish = code.index(finish, i_start)
             break unless i_finish
             last_i_finish = i_finish
-            $stderr.puts "detected block: #{i_start} - #{i_finish}" if $stdout.isatty 
+            $stderr.puts "detected block: #{i_start} - #{i_finish}" if $stdout.isatty
             i_vfl_start = code.index(vfl_start, i_start)
             i_vfl_end = code.index(vfl_finish, i_vfl_start)
-            $stderr.puts "vfl: #{i_vfl_start} - #{i_vfl_end}" if $stdout.isatty 
+            $stderr.puts "vfl: #{i_vfl_start} - #{i_vfl_end}" if $stdout.isatty
             vfl =  code[i_vfl_start+vfl_start.length..i_vfl_end-1]
 
-            newcode = transform_raw_code(vfl.strip)
+            newcode = transform_raw_code(vfl.strip, swift)
 
             # find indent
             indent = ""
@@ -358,8 +369,8 @@ def update_file(path)
     File.open(path, "r") do |f|
         code = f.read
 
-        code = transform_delimited_code(code)
-        
+        code = transform_delimited_code(code, path.index(".swift")!=nil)
+
         File.open(path, "w") do |f|
             f.write(code)
         end
@@ -378,17 +389,21 @@ if __FILE__ == $0
     elsif ARGV[0]=="-f"
         update_file(ARGV[1])
     else
-        if ARGV[0]=="--raw" or ARGV[0]=="-r"
+        mode = :delimited
+        vfl = false
+        for arg in ARGV
+          if ["-r", "--raw"].index(arg)
             mode = :raw
-        else
-            mode = :delimited
+          elsif ["-s", "--swift"].index(arg)
+            vfl = true
+          end
         end
 
         str = STDIN.read
         if mode == :raw
-            puts transform_raw_code(str)
+            puts transform_raw_code(str, swift)
         else
-            puts transform_delimited_code(str)
+            puts transform_delimited_code(str, swift)
         end
     end
 end
