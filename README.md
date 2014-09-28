@@ -1,6 +1,6 @@
 # Summary
 
-`vfl2objc` is a tool to convert VFL (Visual Formatting Language) based UI layout to native, frame-based, Objective-C code.
+`vfl2code` is a tool to convert VFL (Visual Formatting Language) based UI layout to native, frame-based, Objective-C or Swift code.
 
 # Table of Contents
 
@@ -18,14 +18,14 @@
 ## 1. One-time setup
 
 ```
-sudo setup.rb
+sudo ./setup.rb
 ```
 
 This will copy the necessary files to the necessary folders to integrate nicely with Xcode.
 
 ## 2. Restart Xcode and confirm installation
 
-Fist, restart Xcode, then navigate to `Xcode > Services` in the upper left application menu. You should be able to see the vfl-file service listed under the General section.
+Restart Xcode, then navigate to `Xcode > Services` in the upper left application menu. You should be able to see the vfl2code service listed under the General section.
 
 ## 3. Create a VFL code block
 
@@ -41,13 +41,15 @@ To start a new VFL based code block, enter something like below in the right pla
 
 *Note:* the first line and the last line are important. The final `// end VFL` must be followed by a LF line break (`\n`). You can also `// VFL begin` and `// VFL end`
 
-## 4. Save, then run the `vfl-file` service
+You can also type vflswift or vflobjc to trigger the code snippet and insert the basic structure.
 
-Make sure you save the file (Cmd+S), then navigate to `Xcode > Services > vfl-file` in the upper left application menu. The VFL block you entered will expand to a full code block!
+## 4. Save, then run the `vfl2code` service
 
-Each time after editing something in the VFL section, also press Cmd+S and run the vfl-file service, so the code will get updated.
+Make sure you save the file (Cmd+S), then navigate to `Xcode > Services > vfl2code` in the upper left application menu. The VFL block you entered will expand to a full code block!
 
-**Protip:** you can add a keyboard shortcut to the vfl-file menu in `System Preferences > Keyboard > Keyboard Shortcuts`
+Each time after editing something in the VFL section, also press Cmd+S and run the vfl2code service, so the code will get updated.
+
+**Protip:** you can add a keyboard shortcut to the vfl2code menu in `System Preferences > Keyboard > Keyboard Shortcuts`
 
 # Sample Rules
 
@@ -117,13 +119,13 @@ This means B's height is 100 and B is vertically centered in its superview.
 
 # Frame overriding
 
-**Unlike** Cocoa Autolayout, `vfl2objc` allows you to override the frame of an element before or after the generated code block.
+**Unlike** Cocoa Autolayout, `vfl2code` allows you to override the frame of an element before or after the generated code block.
 
 For example this is valid allowed:
 
     labelA.text = @"hi";
     [labelA sizeToFit];
-    // generated code based on |-[labelA]-10-[itemB] 
+    // generated code based on |-[labelA]-10-[itemB]
 
 This is also valid and allowed:
 
@@ -144,15 +146,15 @@ Command line tools
 You can use this script to convert raw VFL to Objective-C code from command line:
 
     echo "|-10-[button]
-    V:[button]-|" | vfl2objc.rb --raw
+    V:[button]-|" | vfl2code.rb --raw
 
 Or convert an Objective-C source code file, preserving non-VFL areas. To do so, run either:
 
-    cat yourfile.m | vfl2objc.rb > yourfile_with_changes.m
+    cat yourfile.swift | vfl2code.rb --swift > yourfile_with_changes.swift
 
 Or transform it in place:
 
-    vfl2objc.rb -f yourfile.m
+    vfl2code.rb -f yourfile.m
 
 Further integration
 ===================
@@ -165,7 +167,7 @@ To do this:
 
     **Protip:** If you use git, you may want to go to "manage scheme" and make your scheme "shared" first, so the scheme config will be in your git repo.
 2. Inside scheme editor, expand "Build", and add a pre-action
-3. Use whatever scripting language to create a script that loops through all your `.m` files, and call `vfl2objc.rb -f {file_path}`
+3. Use whatever scripting language to create a script that loops through all your `.m` files, and call `vfl2code.rb -f {file_path}`
 
 License
 =======
