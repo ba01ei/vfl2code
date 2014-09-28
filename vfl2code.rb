@@ -211,7 +211,7 @@ def code_gen(swift, idx)
     code << "/*\n"
     code << PARAMS[:VFL].split("\n").collect{|l| " "+l.strip}.join("\n")
     if swift
-      code << "*/\nvar #{frame}:CGRect;"
+      code << "\n */\nvar #{frame}:CGRect;"
     else
       code << "\n */\n{"
       code << "CGRect #{frame};"
