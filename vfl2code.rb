@@ -207,6 +207,7 @@ end
 
 def code_gen(swift, idx)
     frame = "f#{idx}"
+    flexiblePrefix = swift ? "UIViewAutoresizing.Flexible" : "UIViewAutoresizingFlexible"
     code = "// --- VFL GENERATED CODE ---\n"
     code << "/*\n"
     code << PARAMS[:VFL].split("\n").collect{|l| " "+l.strip}.join("\n")
@@ -223,19 +224,19 @@ def code_gen(swift, idx)
         if view.centerx
             code << (exists(view.w) ? "#{frame}.size.width=#{view.w};" : "")
             code << "#{frame}.origin.x=(superview.bounds.size.width-#{frame}.size.width)/2.0;"
-            arh = "UIViewAutoresizing#{swift ? "." : ""}FlexibleLeftMargin|UIViewAutoresizing#{swift ? "." : ""}FlexibleRightMargin"
+            arh = "#{flexiblePrefix}LeftMargin|#{flexiblePrefix}RightMargin"
         elsif exists(view.x) and exists(view.w)
             code << "#{frame}.origin.x=#{view.code_for_x};"
             code << "#{frame}.size.width=#{view.w};"
-            arh = "UIViewAutoresizing#{swift ? "." : ""}FlexibleRightMargin"
+            arh = "#{flexiblePrefix}RightMargin"
         elsif exists(view.w) and exists(view.r)
             code << "#{frame}.origin.x=#{view.code_for_right}-(#{view.w});"
             code << "#{frame}.size.width=#{view.w};"
-            arh = "UIViewAutoresizing#{swift ? "." : ""}FlexibleLeftMargin"
+            arh = "#{flexiblePrefix}LeftMargin"
         elsif exists(view.x) and exists(view.r)
             code << "#{frame}.origin.x=#{view.code_for_x};"
             code << "#{frame}.size.width=#{view.code_for_right}-#{frame}.origin.x;"
-            arh = "UIViewAutoresizing#{swift ? "." : ""}FlexibleWidth"
+            arh = "#{flexiblePrefix}Width"
         else
             arh = ""
             if exists(view.w)
@@ -244,11 +245,11 @@ def code_gen(swift, idx)
             end
             if exists(view.x)
                 code << "#{frame}.origin.x=#{view.code_for_x};"
-                arh = "UIViewAutoresizing#{swift ? "." : ""}FlexibleRightMargin"
+                arh = "#{flexiblePrefix}RightMargin"
             end
             if exists(view.r)
                 code << "#{frame}.origin.x=#{view.code_for_right}-#{frame}.size.width;"
-                arh = "UIViewAutoresizing#{swift ? "." : ""}FlexibleLeftMargin"
+                arh = "#{flexiblePrefix}LeftMargin"
             end
             if arh.length==0
                 arh = "?"
@@ -258,19 +259,19 @@ def code_gen(swift, idx)
         if view.centery
             code << (exists(view.h) ? "#{frame}.size.height=#{view.h};" : "")
             code << "#{frame}.origin.y=(superview.bounds.size.height-#{frame}.size.height)/2.;"
-            arv = "UIViewAutoresizing#{swift ? "." : ""}FlexibleTopMargin|UIViewAutoresizing#{swift ? "." : ""}FlexibleBottomMargin"
+            arv = "#{flexiblePrefix}TopMargin|#{flexiblePrefix}BottomMargin"
         elsif exists(view.y) and exists(view.h)
             code << "#{frame}.origin.y=#{view.code_for_y};"
             code << "#{frame}.size.height=#{view.h};"
-            arv = "UIViewAutoresizing#{swift ? "." : ""}FlexibleBottomMargin"
+            arv = "#{flexiblePrefix}BottomMargin"
         elsif exists(view.h) and exists(view.b)
             code << "#{frame}.origin.y=#{view.code_for_bottom}-#{view.h};"
             code << "#{frame}.size.height=#{view.h};"
-            arv = "UIViewAutoresizing#{swift ? "." : ""}FlexibleTopMargin"
+            arv = "#{flexiblePrefix}TopMargin"
         elsif exists(view.y) and exists(view.b)
             code << "#{frame}.origin.y=#{view.code_for_y};"
             code << "#{frame}.size.height=#{view.code_for_bottom}-#{frame}.origin.y;"
-            arv = "UIViewAutoresizing#{swift ? "." : ""}FlexibleHeight"
+            arv = "#{flexiblePrefix}Height"
         else
             arv = ""
             if exists(view.h)
@@ -279,11 +280,11 @@ def code_gen(swift, idx)
             end
             if exists(view.y)
                 code << "#{frame}.origin.y=#{view.code_for_y};"
-                arv = "UIViewAutoresizing#{swift ? "." : ""}FlexibleBottomMargin"
+                arv = "#{flexiblePrefix}BottomMargin"
             end
             if exists(view.b)
                 code << "#{frame}.origin.y=#{view.code_for_bottom}-#{frame}.size.height;"
-                arv = "UIViewAutoresizing#{swift ? "." : ""}FlexibleTopMargin"
+                arv = "#{flexiblePrefix}TopMargin"
             end
             if arv.length==0
                 arv = "?"
