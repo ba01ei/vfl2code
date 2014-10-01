@@ -208,7 +208,7 @@ end
 def code_gen(swift, idx)
     frame = "f#{idx}"
     flexiblePrefix = swift ? "UIViewAutoresizing.Flexible" : "UIViewAutoresizingFlexible"
-    code = "// --- VFL GENERATED CODE ---\n"
+    code = "// begin VFL\n"
     code << "/*\n"
     code << PARAMS[:VFL].split("\n").collect{|l| " "+l.strip}.join("\n")
     if swift
@@ -303,7 +303,7 @@ def code_gen(swift, idx)
     unless swift
       code << "}"
     end
-    code << "\n// --- END OF CODE GENERATED FROM VFL ---\n"
+    code << "\n// end VFL\n"
     code
 end
 
@@ -324,10 +324,10 @@ def transform_delimited_code(input, swift)
     vfl_finish = "*/"
     last_i_finish = 0
 
+    idx = 0
     STARTS_AND_ENDS.each do |start, finish|
         $stderr.puts "checking blocks between #{start} and #{finish}"
         last_i_finish = 0
-        idx = 0
         while true do
             i_start = code.index(start, last_i_finish)
             break unless i_start
@@ -340,6 +340,7 @@ def transform_delimited_code(input, swift)
             $stderr.puts "vfl: #{i_vfl_start} - #{i_vfl_end}" if $stdout.isatty
             vfl =  code[i_vfl_start+vfl_start.length..i_vfl_end-1]
 
+            # $stderr.puts "transform raw code: idx=#{idx}, vfl.strip:#{vfl.strip}"
             newcode = transform_raw_code(vfl.strip, swift, idx)
             idx += 1
 
