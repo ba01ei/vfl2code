@@ -29,4 +29,10 @@ class VFLTest < Minitest::Test
       assert transform_raw_code(input, true, 0).include? output
     end
 
+    def test_dependence
+        input = "|-x1-[A][B][C(>0)][D][E][F]-x2-|"
+        output = "var f0:CGRect;f0=A.frame;f0.origin.x=0+x1;A.frame=f0;A.autoresizingMask|=UIViewAutoresizing.FlexibleRightMargin;superview.addSubview(A);f0=B.frame;f0.origin.x=CGRectGetMaxX(A.frame)+0;B.frame=f0;B.autoresizingMask|=UIViewAutoresizing.FlexibleRightMargin;superview.addSubview(B);f0=F.frame;f0.origin.x=superview.bounds.size.width-(0+x2)-f0.size.width;F.frame=f0;F.autoresizingMask|=UIViewAutoresizing.FlexibleLeftMargin;superview.addSubview(F);f0=E.frame;f0.origin.x=CGRectGetMinX(F.frame)-(0)-f0.size.width;E.frame=f0;E.autoresizingMask|=UIViewAutoresizing.FlexibleLeftMargin;superview.addSubview(E);f0=D.frame;f0.origin.x=CGRectGetMinX(E.frame)-(0)-f0.size.width;D.frame=f0;D.autoresizingMask|=UIViewAutoresizing.FlexibleLeftMargin;superview.addSubview(D);f0=C.frame;f0.origin.x=CGRectGetMaxX(B.frame)+0;f0.size.width=CGRectGetMinX(D.frame)-(0)-f0.origin.x;C.frame=f0;C.autoresizingMask|=UIViewAutoresizing.FlexibleWidth;superview.addSubview(C);"
+
+        assert transform_raw_code(input, true, 0).include? output
+    end
 end

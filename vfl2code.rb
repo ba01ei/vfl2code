@@ -175,24 +175,24 @@ def add_to_list(position, view)
     end
     LIST.insert(position, view)
     view.added_to_list = true
-    if view.xref.to_s.length>0
+    if view.xref.to_s.length>0 and view.x.to_s.length>0
         v2 = HASH[view.xref]
-        # puts "#{view.name} depends on #{v2.name}, so before adding #{v2.name} before #{view.name}"
+        # puts "#{view.name} depends on #{v2.name} coz xref, so before adding #{v2.name} before #{view.name}"
         add_to_list(LIST.index(view), v2)
     end
-    if view.yref.to_s.length>0
+    if view.yref.to_s.length>0 and view.y.to_s.length>0
         v2 = HASH[view.yref]
-        # puts "#{view.name} depends on #{v2.name}, so before adding #{v2.name} before #{view.name}"
+        # puts "#{view.name} depends on #{v2.name} coz xref, so before adding #{v2.name} before #{view.name}"
         add_to_list(LIST.index(view), v2)
     end
-    if view.rref.to_s.length>0
+    if view.rref.to_s.length>0 and view.r.to_s.length>0
         v2 = HASH[view.rref]
-        # puts "#{view.name} depends on #{v2.name}, so before adding #{v2.name} before #{view.name}"
+        # puts "#{view.name} depends on #{v2.name} coz rref, so before adding #{v2.name} before #{view.name}"
         add_to_list(LIST.index(view), v2)
     end
-    if view.bref.to_s.length>0
+    if view.bref.to_s.length>0 and view.b.to_s.length>0
         v2 = HASH[view.bref]
-        # puts "#{view.name} depends on #{v2.name}, so before adding #{v2.name} before #{view.name}"
+        # puts "#{view.name} depends on #{v2.name} coz bref, so before adding #{v2.name} before #{view.name}"
         add_to_list(LIST.index(view), v2)
     end
 end
