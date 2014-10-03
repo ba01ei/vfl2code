@@ -258,7 +258,7 @@ def code_gen(swift, idx)
 
         if view.centery
             code << (exists(view.h) ? "#{frame}.size.height=#{view.h};" : "")
-            code << "#{frame}.origin.y=(superview.bounds.size.height-#{frame}.size.height)/2.;"
+            code << "#{frame}.origin.y=(superview.bounds.size.height-#{frame}.size.height)/2.0;"
             arv = "#{flexiblePrefix}TopMargin|#{flexiblePrefix}BottomMargin"
         elsif exists(view.y) and exists(view.h)
             code << "#{frame}.origin.y=#{view.code_for_y};"
