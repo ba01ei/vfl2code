@@ -21,11 +21,19 @@
 sudo ./setup.rb
 ```
 
-This will copy the necessary files to the necessary folders to integrate nicely with Xcode.
+## 2. Integrate with your Xcode project
 
-## 2. Restart Xcode and confirm installation
+Navigate to your target, click "Build Phases", click "+", add a "New Run Script Phase", drag it to before "Compile Sources".
 
-Restart Xcode, then navigate to `Xcode > Services` in the upper left application menu. You should be able to see the vfl2code service listed under the General section.
+Inside the script editing field, type
+
+    vfl2code.rb -A ${PROJECT_DIR}
+
+or
+
+    vfl2code.rb -A ${PROJECT_DIR}/some_folder
+
+where some_folder is the folder where you have all your Objective C and Swift code files.
 
 ## 3. Create a VFL code block
 
@@ -43,13 +51,7 @@ To start a new VFL based code block, enter something like below in the right pla
 
 You can also type vflswift or vflobjc to trigger the code snippet and insert the basic structure.
 
-## 4. Save, then run the `vfl2code` service
-
-Make sure you save the file (Cmd+S), then navigate to `Xcode > Services > vfl2code` in the upper left application menu. The VFL block you entered will expand to a full code block!
-
-Each time after editing something in the VFL section, also press Cmd+S and run the vfl2code service, so the code will get updated.
-
-**Protip:** you can add a keyboard shortcut to the vfl2code menu in `System Preferences > Keyboard > Keyboard Shortcuts`
+## 4. Build/Run the project
 
 # Sample Rules
 
@@ -156,18 +158,12 @@ Or transform it in place:
 
     vfl2code.rb -f yourfile.m
 
-Further integration
-===================
+Or transform a folder recursively in place:
 
-Other than manually triggering the script with Mac Service, you can consider to integrate VFL code generation into pre-build script.
+    vfl2code.rb -A yourfile.m
 
-To do this:
+You can use -a to dry run.
 
-1. In Xcode Toolbar, choose your scheme and edit your scheme.
-
-    **Protip:** If you use git, you may want to go to "manage scheme" and make your scheme "shared" first, so the scheme config will be in your git repo.
-2. Inside scheme editor, expand "Build", and add a pre-action
-3. Use whatever scripting language to create a script that loops through all your `.m` files, and call `vfl2code.rb -f {file_path}`
 
 License
 =======

@@ -382,6 +382,17 @@ def update_file(path)
     end
 end
 
+def update_folder(folder, dryrun)
+  Dir.glob("#{folder}/**/*").each {|f|
+    if f[/\.swift$/] or f[/\.m$/]
+      if dryrun
+        puts "will transform #{f}"
+      else
+        update_file(f)
+      end
+    end
+  }
+end
 
 if __FILE__ == $0
     if ARGV[0]=="-h"
@@ -389,10 +400,16 @@ if __FILE__ == $0
         $stderr.puts
         $stderr.puts " -r, --raw     Treat standard input as raw VFL without comment delimiters"
         $stderr.puts " -f filename   Transform a file IN PLACE"
+        $stderr.puts " -A folder     Transform all files in a folder IN PLACE"
+        $stderr.puts " -a folder     Dry run of -A"
         $stderr.puts
         $stderr.puts "With no file specified, will transform standard input and output to standard output"
     elsif ARGV[0]=="-f"
         update_file(ARGV[1])
+    elsif ARGV[0]=="-a"
+        update_folder(ARGV[1], true)
+    elsif ARGV[0]=="-A"
+        update_folder(ARGV[1], false)
     else
         mode = :delimited
         swift = false
