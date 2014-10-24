@@ -319,7 +319,7 @@ def transform_raw_code(vfl, swift, idx)
 end
 
 def transform_delimited_code(input, swift)
-    code = input
+    code = input.dup
     vfl_start = "/*\n"
     vfl_finish = "*/"
     last_i_finish = 0
@@ -380,8 +380,9 @@ def update_file(path, dryrun)
           if dryrun
             puts "!!! will be transformed: #{path}"
           else
+
             File.open(path, "w") do |f|
-                f.write(code)
+                f.write(new_code)
             end
           end
         else
