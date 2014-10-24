@@ -326,7 +326,7 @@ def transform_delimited_code(input, swift)
 
     idx = 0
     STARTS_AND_ENDS.each do |start, finish|
-        $stderr.puts "checking blocks between #{start} and #{finish}"
+        # $stderr.puts "checking blocks between #{start} and #{finish}"
         last_i_finish = 0
         while true do
             i_start = code.index(start, last_i_finish)
@@ -334,10 +334,10 @@ def transform_delimited_code(input, swift)
             i_finish = code.index(finish, i_start)
             break unless i_finish
             last_i_finish = i_finish
-            $stderr.puts "detected block: #{i_start} - #{i_finish}" if $stdout.isatty
+            # $stderr.puts "detected block: #{i_start} - #{i_finish}" if $stdout.isatty
             i_vfl_start = code.index(vfl_start, i_start)
             i_vfl_end = code.index(vfl_finish, i_vfl_start)
-            $stderr.puts "vfl: #{i_vfl_start} - #{i_vfl_end}" if $stdout.isatty
+            # $stderr.puts "vfl: #{i_vfl_start} - #{i_vfl_end}" if $stdout.isatty
             vfl =  code[i_vfl_start+vfl_start.length..i_vfl_end-1]
 
             # $stderr.puts "transform raw code: idx=#{idx}, vfl.strip:#{vfl.strip}"
@@ -368,16 +368,26 @@ def transform_delimited_code(input, swift)
     code
 end
 
-def update_file(path)
+def update_file(path, dryrun)
     # start = "\/\/ \-\-\- VFL"
     # finish = "VFL \-\-\-\n"
     File.open(path, "r") do |f|
         code = f.read
 
-        code = transform_delimited_code(code, path.index(".swift")!=nil)
+        new_code = transform_delimited_code(code, path.index(".swift")!=nil)
 
-        File.open(path, "w") do |f|
-            f.write(code)
+        if code != new_code
+          if dryrun
+            puts "!!! will be transformed: #{path}"
+          else
+            File.open(path, "w") do |f|
+                f.write(code)
+            end
+          end
+        else
+          if dryrun
+            puts "will stay the same: #{path}"
+          end
         end
     end
 end
@@ -385,11 +395,7 @@ end
 def update_folder(folder, dryrun)
   Dir.glob("#{folder}/**/*").each {|f|
     if f[/\.swift$/] or f[/\.m$/]
-      if dryrun
-        puts "will transform #{f}"
-      else
-        update_file(f)
-      end
+      update_file(f, dryrun)
     end
   }
 end
@@ -405,7 +411,7 @@ if __FILE__ == $0
         $stderr.puts
         $stderr.puts "With no file specified, will transform standard input and output to standard output"
     elsif ARGV[0]=="-f"
-        update_file(ARGV[1])
+        update_file(ARGV[1], false)
     elsif ARGV[0]=="-a"
         update_folder(ARGV[1], true)
     elsif ARGV[0]=="-A"
