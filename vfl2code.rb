@@ -292,8 +292,15 @@ def code_gen(swift, idx)
         end
 
         code << "#{view.name}.frame=#{frame};"
-        code << (arh=="?" ? "" : "#{view.name}.autoresizingMask|=#{arh};")
-        code << (arv=="?" ? "" : "#{view.name}.autoresizingMask|=#{arv};")
+        
+        if swift
+            code << (arh=="?" ? "" : "#{view.name}.autoresizingMask=#{view.name}.autoresizingMask.union(#{arh});")
+            code << (arv=="?" ? "" : "#{view.name}.autoresizingMask=#{view.name}.autoresizingMask.union(#{arv});")
+        else
+            code << (arh=="?" ? "" : "#{view.name}.autoresizingMask|=#{arh};")
+            code << (arv=="?" ? "" : "#{view.name}.autoresizingMask|=#{arv};")
+        end
+        
         if swift
           code << "superview.addSubview(#{view.name});"
         else
