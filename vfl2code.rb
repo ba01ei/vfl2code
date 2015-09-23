@@ -224,7 +224,7 @@ def code_gen(swift, idx)
         if view.centerx
             code << (exists(view.w) ? "#{frame}.size.width=#{view.w};" : "")
             code << "#{frame}.origin.x=(superview.bounds.size.width-#{frame}.size.width)/2.0;"
-            arh = "#{flexiblePrefix}LeftMargin|#{flexiblePrefix}RightMargin"
+            arh = swift ? "[#{flexiblePrefix}LeftMargin,#{flexiblePrefix}RightMargin]" : "#{flexiblePrefix}LeftMargin|#{flexiblePrefix}RightMargin"
         elsif exists(view.x) and exists(view.w)
             code << "#{frame}.origin.x=#{view.code_for_x};"
             code << "#{frame}.size.width=#{view.w};"
@@ -259,7 +259,7 @@ def code_gen(swift, idx)
         if view.centery
             code << (exists(view.h) ? "#{frame}.size.height=#{view.h};" : "")
             code << "#{frame}.origin.y=(superview.bounds.size.height-#{frame}.size.height)/2.0;"
-            arv = "#{flexiblePrefix}TopMargin|#{flexiblePrefix}BottomMargin"
+            arv = swift ? "[#{flexiblePrefix}TopMargin,#{flexiblePrefix}BottomMargin]" : "#{flexiblePrefix}TopMargin|#{flexiblePrefix}BottomMargin"
         elsif exists(view.y) and exists(view.h)
             code << "#{frame}.origin.y=#{view.code_for_y};"
             code << "#{frame}.size.height=#{view.h};"
